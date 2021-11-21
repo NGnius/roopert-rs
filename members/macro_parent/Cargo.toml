@@ -1,0 +1,17 @@
+[package]
+name = "macro_parent"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[features]
+verbose = []
+
+[dependencies]
+syn = { version = "^1" }
+quote = { version = "^1" }
+
+# internal dependencies
+macro_common = { path = "../macro_common", features = ["verbose"]}
