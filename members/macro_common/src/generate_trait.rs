@@ -7,6 +7,8 @@ pub trait Generate {
     
     fn generate_auto(&mut self, input: TokenStream) -> Result<TokenStream, String> {
         //self.generate(input)
+        #[cfg(feature = "verbose")]
+        println!(" --- \\/ Generating \\/ --- ");
         let generated = self.generate(input.clone())?;
         let mut output;
         if self.auto_append() {
@@ -16,7 +18,7 @@ pub trait Generate {
             output = generated;
         }
         #[cfg(feature = "verbose")]
-        println!("Generated: \n{}", output);
+        println!(" --- \\/ Generated \\/ --- \n{}\n --- /\\ Generated /\\ (auto:{})---", output, self.auto_append());
         Ok(output)
     }
 }

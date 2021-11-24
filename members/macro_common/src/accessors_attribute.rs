@@ -121,16 +121,20 @@ fn single_segment(path: &Path, input: ParseStream) -> Result<Ident> {
 impl Generate for AccessorsAttribute {
     fn generate(&mut self, input: TokenStream) -> core::result::Result<TokenStream, String> {
         //self.attr.generate(input)
-        let target_struct: ItemStruct = syn::parse(input.into()).map_err(|_| "Only named structs objects can have roopert accessors".to_string())?;
-        let target_struct_ident = &target_struct.ident;
+        let mut target_struct: ItemStruct = syn::parse(input.into()).map_err(|_| "Only named structs objects can have roopert accessors".to_string())?;
+        let target_struct_ident = &target_struct.ident.clone();
         let mut getters: Vec<(FieldMetadata, GetterAttribute)> = Vec::new();
         let mut setters: Vec<(FieldMetadata, SetterAttribute)> = Vec::new();
         
         // find getter and setter attributes
-        for field in target_struct.fields.iter() {
+        for field in target_struct.fields.iter_mut() {
             let mut setter_found = false;
             let mut getter_found = false;
             let field_meta = FieldMetadata::from_named_field(field);
+            
+            // get and set attributes must be removed after processing
+            // this stores any remaining attributes (which may be used by other macros or the compiler)
+            let mut new_attributes = Vec::with_capacity(field.attrs.len());
             
             // associate field type with field ident if has #[roopert(parent)] or #[parent] attr
             for attr in &field.attrs {
@@ -160,8 +164,13 @@ impl Generate for AccessorsAttribute {
                                 field_meta.clone(), setter
                             ))
                         },
-                        _ => continue
+                        _ => {
+                            new_attributes.push(attr.clone()); // keep non-related roopert attribute
+                            continue;
+                        }
                     }
+                } else {
+                    new_attributes.push(attr.clone()); // keep unrelated attribute
                 }
             }
             if !setter_found && self.setter_rule.needs_accessor(field) {
@@ -183,6 +192,8 @@ impl Generate for AccessorsAttribute {
             setter_tokens.push(attr.impl_set_fn(&meta.ident, &meta.ty));
         }
         Ok(quote!{
+            #target_struct
+            
             impl #target_struct_ident {
                 #(#getter_tokens)*
                 
@@ -191,5 +202,5 @@ impl Generate for AccessorsAttribute {
         })
     }
     
-    fn auto_append(&self) -> bool {true}
+    fn auto_append(&self) -> bool {false}
 }

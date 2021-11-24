@@ -54,7 +54,15 @@ impl Generate for RoopertAttributeType {
         }
     }
     
-    fn auto_append(&self) -> bool {true}
+    fn auto_append(&self) -> bool {
+        match self {
+            Self::Parent(parent) => parent.auto_append(),
+            Self::Extends(extends) => extends.auto_append(),
+            Self::Accessors(accessors) => accessors.auto_append(),
+            Self::Get(getters) => getters.auto_append(),
+            Self::Set(setters) => setters.auto_append(),
+        }
+    }
 }
 
 #[cfg_attr(feature="verbose", derive(Debug))]
@@ -101,5 +109,5 @@ impl Generate for RoopertAttribute {
         self.attr.generate(input)
     }
     
-    fn auto_append(&self) -> bool {true}
+    fn auto_append(&self) -> bool {self.attr.auto_append()}
 }

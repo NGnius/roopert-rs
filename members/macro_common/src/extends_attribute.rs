@@ -82,14 +82,16 @@ impl Parse for ExtendsAttribute {
 impl Generate for ExtendsAttribute {
     fn generate(&mut self, input: TokenStream) -> core::result::Result<TokenStream, String> {
         // parse input
-        let target_struct: ItemStruct = syn::parse(input.into()).map_err(|_| "Only named structs objects can be extended".to_string())?;
-        let target_struct_ident = &target_struct.ident;
+        let mut target_struct: ItemStruct = syn::parse(input.into()).map_err(|_| "Only named structs objects can be extended".to_string())?;
+        let target_struct_ident = &target_struct.ident.clone();
         let mut type_map = HashMap::<Type, Ident>::new(); // associate extending type to struct field
         
         // TODO handle unnamed fields correctly
         //let mut fields = Vec::<Field>::with_capacity(target_struct.fields.len());
-        for field in target_struct.fields.iter() {
-            //fields.push(field.clone());
+        for field in target_struct.fields.iter_mut() {
+            // parent attributes must be removed after processing
+            // this stores any remaining attributes (which may be used by other macros or the compiler)
+            let mut new_attributes = Vec::with_capacity(field.attrs.len());
             
             // associate field type with field ident if has #[roopert(parent)] or #[parent] attr
             for attr in &field.attrs {
@@ -100,24 +102,30 @@ impl Generate for ExtendsAttribute {
                     parent_attr = Some(attr.parse_args::<ParentAttribute>().map_err(|_| "Malformed roopert #[parent] attribute".to_string())?);
                 } else if is_roopert_path {
                     let parsed_attr = attr.parse_args::<RoopertAttribute>().map_err(|_| "Malformed #[roopert(parent)] attribute".to_string())?;
-                    if !parsed_attr.attr.is_parent() { continue; }
+                    if !parsed_attr.attr.is_parent() { 
+                        new_attributes.push(attr.clone()); // not parent attribute, keep it
+                        continue;
+                    }
                     parent_attr = Some(match parsed_attr.attr {
                         RoopertAttributeType::Parent(a) => Ok(a),
                         _ => Err("Encountered quantum superpositioned #[roopert(???)] attribute (is_extends() -> true but not Extends)".to_string())
                     }?);
+                } else {
+                    new_attributes.push(attr.clone()); // not roopert-related attribute, keep it
                 }
                 if parent_attr.is_some() {
                     type_map.insert(field.ty.clone(), field.ident.clone().unwrap());
                     break;
                 }
             }
+            field.attrs = new_attributes;
             if !type_map.contains_key(&field.ty) {
                 type_map.insert(field.ty.clone(), field.ident.clone().unwrap());
             }
         }
         
         // generate new code
-        let mut tokens = Vec::new();
+        let mut tokens = vec![quote!{#target_struct}];
         for parent_type in self.types.iter() {
             let target_field = match type_map.get(parent_type) {
                 Some(x) => Ok(x),
@@ -144,10 +152,12 @@ impl Generate for ExtendsAttribute {
             let token = Self::impl_derefmut(target_struct_ident, target_field, parent_type);
             tokens.push(token);
         }
-        Ok(quote!{
+        let code = quote!{
             #(#tokens)*
-        })
+        };
+        println!("Extends:\n{}", code);
+        Ok(code)
     }
     
-    fn auto_append(&self) -> bool {true}
+    fn auto_append(&self) -> bool {false}
 }
