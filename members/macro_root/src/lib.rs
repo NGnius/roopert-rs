@@ -1,9 +1,15 @@
+//! Root macro definition
+
 //extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
 use macro_common::{RoopertAttribute, Generate};
 
+/// Root macro for Roopert.
+/// All attribute macros are of the form `#[roopert(type)]`,
+/// where `type` is the type of attribute.
+/// Refer to the top-level doc for supported types.
 #[proc_macro_attribute]
 pub fn roopert(attr: TokenStream, item: TokenStream) -> TokenStream {
     //let ast: &DeriveInput = &syn::parse(item.clone()).expect("Unable to parse input target");

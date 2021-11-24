@@ -173,6 +173,7 @@ impl Generate for AccessorsAttribute {
                     new_attributes.push(attr.clone()); // keep unrelated attribute
                 }
             }
+            field.attrs = new_attributes;
             if !setter_found && self.setter_rule.needs_accessor(field) {
                 setters.push((field_meta.clone(), SetterAttribute::with_accessor_defaults()));
             }

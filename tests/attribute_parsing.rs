@@ -1,3 +1,5 @@
+//! System test for roopert attribute
+//! A lot of important pieces of this are compile-time tests, but runtime tests are also included for completeness.
 use roopert::roopert;
 //use core::convert::AsRef;
 
@@ -5,6 +7,8 @@ use roopert::roopert;
 #[roopert(accessors, get = Private, set = All)]
 #[derive(Default)]
 struct MacroRootTest {
+    #[roopert(parent)]
+    #[roopert(get)]
     foo: String,
 }
 

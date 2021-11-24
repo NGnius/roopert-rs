@@ -152,11 +152,9 @@ impl Generate for ExtendsAttribute {
             let token = Self::impl_derefmut(target_struct_ident, target_field, parent_type);
             tokens.push(token);
         }
-        let code = quote!{
+        Ok(quote!{
             #(#tokens)*
-        };
-        println!("Extends:\n{}", code);
-        Ok(code)
+        })
     }
     
     fn auto_append(&self) -> bool {false}
