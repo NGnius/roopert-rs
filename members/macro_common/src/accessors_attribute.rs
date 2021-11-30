@@ -7,7 +7,7 @@ use quote::{quote, ToTokens};
 
 use super::{Generate, RoopertAttribute, RoopertAttributeType, GetterAttribute, SetterAttribute};
 
-use super::parse::{is_getter_attribute, is_setter_attribute, is_roopert_attribute};
+use super::parse::{is_getter_attribute, is_setter_attribute, is_roopert_attribute, single_path_segment};
 
 #[cfg_attr(feature="verbose", derive(Debug))]
 enum AccessorAutoRule {
@@ -60,7 +60,7 @@ impl AccessorsAttribute {
     fn rule_from_expr(assignee: &Ident, expr: &Expr, input: ParseStream) -> Result<AccessorAutoRule> {
         match expr {
             Expr::Path(var) => 
-                AccessorAutoRule::from_assignment_str(&single_segment(&var.path, input)?.to_string().to_lowercase(), input, &assignee.to_string()),
+                AccessorAutoRule::from_assignment_str(&single_path_segment(&var.path, input, accessor_path_err_rule)?.to_string().to_lowercase(), input, &assignee.to_string()),
             Expr::Lit(literal) => {
                 match &literal.lit {
                     Lit::Str(lit_str) => 
@@ -69,7 +69,7 @@ impl AccessorsAttribute {
                     _ => Err(input.error(format!("Unsupported literal type in right hand side of assignment in #[roopert(accessor, ..., {} = ???]", assignee.to_string())))
                 }
             },
-            _ => Err(input.error(format!("Unrecognised right hand side of assignmnet in #[roopert(accessor, ..., {} = ???)]", assignee.to_string())))
+            _ => Err(input.error(format!("Unrecognised right hand side of assignment in #[roopert(accessor, ..., {} = ???)]", assignee.to_string())))
         }
     }
 }
@@ -84,7 +84,7 @@ impl Parse for AccessorsAttribute {
             match p {
                 Expr::Assign(assign) => {
                     if let Expr::Path(var) = &*assign.left {
-                        let ident = single_segment(&var.path, input)?;
+                        let ident = single_path_segment(&var.path, input, accessor_path_err_left)?;
                         match &ident.to_string().to_lowercase() as &str {
                             "get" => {
                                 get_rule = Some(Self::rule_from_expr(&ident, &*assign.right, input)?);
@@ -107,14 +107,6 @@ impl Parse for AccessorsAttribute {
             getter_rule: get_rule.unwrap_or(AccessorAutoRule::No),
             setter_rule: set_rule.unwrap_or(AccessorAutoRule::No),
         })
-    }
-}
-
-fn single_segment(path: &Path, input: ParseStream) -> Result<Ident> {
-    if path.segments.len() != 1 {
-        Err(input.error("Invalid path encountered in #[roopert(accessor, ...)]"))
-    } else {
-        Ok(path.segments.first().unwrap().clone().ident)
     }
 }
 
@@ -204,4 +196,13 @@ impl Generate for AccessorsAttribute {
     }
     
     fn auto_append(&self) -> bool {false}
+}
+
+fn accessor_path_err_left(path: &Path) -> String {
+    format!("Unsupported path in left hand side of assignment in attribute #[roopert(accessors, ... = {})]", path.to_token_stream())
+}
+
+
+fn accessor_path_err_rule(path: &Path) -> String {
+    format!("Unsupported path in right hand side of assignment in attribute #[roopert(accessors, ... = {})]", path.to_token_stream())
 }
