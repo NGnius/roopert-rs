@@ -142,7 +142,7 @@ impl Generate for AccessorsAttribute {
                     setter_found = true;
                     setters.push((field_meta.clone(), setter));
                 } else if is_roopert_path {
-                    let parsed_attr = attr.parse_args::<RoopertAttribute>().map_err(|_| "Malformed #[roopert(...)] attribute".to_string())?;
+                    let parsed_attr = attr.parse_args::<RoopertAttribute>().map_err(|e| format!("Malformed #[roopert(...)] attribute: {}", e))?;
                     match parsed_attr.attr {
                         RoopertAttributeType::Get(getter) => {
                             getter_found = true;

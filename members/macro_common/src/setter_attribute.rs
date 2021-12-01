@@ -26,11 +26,11 @@ impl SetterAttribute {
     pub fn impl_set_fn(&self, target_field: &Ident, parent_type: &Type) -> TokenStream {
         let setter_fn_name = format_ident!("set_{}", target_field);
         let pre_op = match self.pre.as_ref() {
-            Some(op) => op.to_token_stream(),
+            Some(op) => quote!{#op;}.to_token_stream(),
             None => quote!{}.to_token_stream()
         };
         let post_op = match self.post.as_ref() {
-            Some(op) => op.to_token_stream(),
+            Some(op) => quote!{#op;}.to_token_stream(),
             None => quote!{}.to_token_stream()
         };
         quote!{
@@ -47,7 +47,7 @@ impl Parse for SetterAttribute {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut pre_effect = None;
         let mut post_effect = None;
-        let params = Punctuated::<Expr, Token![,]>::parse_terminated(input)?;
+        let params = Punctuated::<Expr, Token![,]>::parse_terminated(input).map_err(|e| input.error(format!("Invalid parameter in #[roopert(set, ...)]: {}", e)))?;
         for param in params.iter() {
             match param {
                 Expr::Assign(assign) => {

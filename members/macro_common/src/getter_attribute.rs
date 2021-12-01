@@ -26,7 +26,7 @@ impl GetterAttribute {
     pub fn impl_get_fn(&self, target_field: &Ident, parent_type: &Type) -> TokenStream {
         let getter_fn_name = format_ident!("get_{}", target_field);
         let pre_op = match self.pre.as_ref() {
-            Some(op) => op.to_token_stream(),
+            Some(op) => quote!{#op;}.to_token_stream(),
             None => quote!{}.to_token_stream()
         };
         if self.mutable {
@@ -73,7 +73,8 @@ impl Parse for GetterAttribute {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut mutable = false;
         let mut pre_effect = None;
-        let params = Punctuated::<Expr, Token![,]>::parse_terminated(input)?;
+        println!("Input: {}", input);
+        let params = Punctuated::<Expr, Token![,]>::parse_terminated(input).map_err(|e| input.error(format!("Invalid parameter in #[roopert(get, ...)]: {}", e)))?;
         for param in params.iter() {
             match param {
                 Expr::Assign(assign) => {
@@ -84,7 +85,7 @@ impl Parse for GetterAttribute {
                                 pre_effect = Some((&*assign.right).clone());
                                 Ok(())
                             },
-                            "mut" | "mutable" => {
+                            "mut" | "mut_" | "mutable" => {
                                 mutable = Self::rhs_to_bool(&*assign.right, input)?;
                                 Ok(())
                             },
