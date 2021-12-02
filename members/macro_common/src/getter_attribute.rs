@@ -13,6 +13,7 @@ pub struct GetterAttribute {
     // TODO
     pre: Option<Expr>,
     mutable: bool,
+    name: Option<String>,
 }
 
 impl GetterAttribute {
@@ -20,11 +21,14 @@ impl GetterAttribute {
         Self {
             pre: None,
             mutable: false,
+            name: None,
         }
     }
     
     pub fn impl_get_fn(&self, target_field: &Ident, parent_type: &Type) -> TokenStream {
-        let getter_fn_name = format_ident!("get_{}", target_field);
+        let getter_fn_name = self.name.as_ref()
+            .and_then(|name| Some(format_ident!("{}", name)))
+            .unwrap_or_else(|| format_ident!("get_{}", target_field));
         let pre_op = match self.pre.as_ref() {
             Some(op) => quote!{#op;}.to_token_stream(),
             None => quote!{}.to_token_stream()
@@ -47,7 +51,7 @@ impl GetterAttribute {
     }
     
     #[inline]
-    fn rhs_to_bool(rhs: &Expr, input: ParseStream) -> Result<bool> {
+    fn mut_to_bool(rhs: &Expr, input: ParseStream) -> Result<bool> {
         match rhs {
             Expr::Lit(lit) => {
                 match &lit.lit {
@@ -58,13 +62,26 @@ impl GetterAttribute {
                         match &lit_str.value().to_lowercase() as &str {
                             "true" => Ok(true),
                             "false" => Ok(false),
-                            _ => Err(input.error(format!("Invalid string literal in assignment #[roopert(get, ... = {})]", lit.to_token_stream())))
+                            _ => Err(input.error(format!("Invalid string literal in right hand side of mutable parameter #[roopert(get, ... = {})]", lit.to_token_stream())))
                         }
                     },
-                    _ => Err(input.error(format!("Unrecognised literal type in right hand side of assignment #[roopert(get, ... = {})] (use \"true\", true, \"false\", or false)", rhs.to_token_stream())))
+                    _ => Err(input.error(format!("Unrecognised literal type in right hand side of mutable parameter in #[roopert(get, ... = {})] (use \"true\", true, \"false\", or false)", rhs.to_token_stream())))
                 }
             },
-            _ => Err(input.error(format!("Unrecognised right hand side of assignment {} #[roopert(get, ... = {})] (use \"true\", true, \"false\", or false)", rhs.to_token_stream(), rhs.to_token_stream())))
+            _ => Err(input.error(format!("Unrecognised right hand side of mutable parameter in #[roopert(get, ... = {})] (use true or false)", rhs.to_token_stream())))
+        }
+    }
+    
+    #[inline]
+    fn name_to_string(rhs: &Expr, input: ParseStream) -> Result<String> {
+        match rhs {
+            Expr::Lit(lit) => {
+                match &lit.lit {
+                    Lit::Str(lit_str) => Ok(lit_str.value()),
+                    _ => Err(input.error(format!("Invalid literal in right hand side of name parameter #[roopert(get, name = {})]", lit.to_token_stream())))
+                }
+            },
+            _ => Err(input.error(format!("Unrecognised right hand side of name parameter #[roopert(get, name = {})]", rhs.to_token_stream())))
         }
     }
 }
@@ -73,6 +90,7 @@ impl Parse for GetterAttribute {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut mutable = false;
         let mut pre_effect = None;
+        let mut name = None;
         println!("Input: {}", input);
         let params = Punctuated::<Expr, Token![,]>::parse_terminated(input).map_err(|e| input.error(format!("Invalid parameter in #[roopert(get, ...)]: {}", e)))?;
         for param in params.iter() {
@@ -86,9 +104,13 @@ impl Parse for GetterAttribute {
                                 Ok(())
                             },
                             "mut" | "mut_" | "mutable" => {
-                                mutable = Self::rhs_to_bool(&*assign.right, input)?;
+                                mutable = Self::mut_to_bool(&*assign.right, input)?;
                                 Ok(())
                             },
+                            "name" => {
+                                name = Some(Self::name_to_string(&*assign.right, input)?);
+                                Ok(())
+                            }
                             _ => Err(input.error(format!("Unrecognised left hand side of assignment {} in #[roopert(get, ...)]", ident.to_string())))
                         }
                     } else {
@@ -98,9 +120,10 @@ impl Parse for GetterAttribute {
                 _ => Err(input.error(format!("Unrecognised attribute parameter {} in #[roopert(get, ...)]", param.to_token_stream())))
             }?;
         }
-        Ok(Self{
+        Ok(Self {
             pre: pre_effect,
             mutable: mutable,
+            name: name,
         })
     }
 }

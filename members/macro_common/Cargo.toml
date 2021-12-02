@@ -10,3 +10,4 @@ verbose = []
 syn = { version = "^1", features = ["full", "parsing", "extra-traits"] }
 quote = { version = "^1" }
 proc-macro2 = { version = "^1" }
+proc-macro-error = { version = "^1" }

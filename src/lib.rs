@@ -79,6 +79,7 @@
 //! A field-level attribute for overriding accessors attribute behaviour for getters methods.
 //! Optionally, `pre = operation` can be supplied to do an operation before the get function returns.
 //! The optional parameter `mutable = true` can be supplied to get a mutable reference (as well as allow mutable `self` operations with the pre parameter).
+//! The optional parameter `name = "getter_name"` can be used to specify a custom get function name (defaults to `get_<field name>`).
 //! The standard form `#[roopert(get)]` or the shortened `#[get]` attribute macro may be used.
 //! **Note**: this doesn't work without `#[roopert(accessors)]` on the struct.
 //!
@@ -86,7 +87,7 @@
 //! # use roopert::roopert;
 //! #[roopert(accessors)]
 //! struct MyStruct {
-//!     #[roopert(get, mutable = true, pre = self.before_get_my_field() )]
+//!     #[roopert(get, mutable = true, pre = self.before_get_my_field(), name = "get_field" )]
 //!     my_field: String,
 //!     my_field_is_borrowed: bool
 //! }
@@ -101,7 +102,7 @@
 //! # /*
 //! impl MyStruct {
 //!     // generated from get rule in field attribute
-//!     pub fn get_my_field(&mut self) -> &mut String {
+//!     pub fn get_field(&mut self) -> &mut String {
 //!         self.before_get_my_field(); // from `pre = self.pre_get_my_field()`
 //!         &mut self.my_field
 //!     }
@@ -113,6 +114,7 @@
 //! ### set
 //! A field-level attribute for overriding accessors attribute behaviour for setter methods.
 //! Optionally, `pre = operation` and `post = operation` can be used to do an operation before and after the variable is set, respectively.
+//! The optional parameter `name = "setter_name"` can be used to specify a custom set function name (defaults to `set_<field name>`).
 //! The standard form `#[roopert(set)]` or shortened the `#[set]` attribute macro may be used.
 //! **Note**: this doesn't work without `#[roopert(accessors)]` on the struct.
 //! 
