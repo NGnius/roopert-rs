@@ -19,11 +19,9 @@ members = ["members/*"]
 [features]
 default = ["macros"]
 
-macros = ["macros_internal", "macro_parent"]
-macros_internal = ["macro_root"]
+macros = ["macro_root"]
 
 [dependencies]
 
 # internal dependencies
-macro_root = { path = "members/macro_root", optional = true, features = ["verbose"] }
-macro_parent = { path = "members/macro_parent", optional = true, features = ["verbose"] }
+macro_root = { path = "members/macro_root", optional = true} #, features = ["verbose"] }

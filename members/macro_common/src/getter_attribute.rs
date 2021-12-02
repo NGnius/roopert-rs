@@ -91,7 +91,6 @@ impl Parse for GetterAttribute {
         let mut mutable = false;
         let mut pre_effect = None;
         let mut name = None;
-        println!("Input: {}", input);
         let params = Punctuated::<Expr, Token![,]>::parse_terminated(input).map_err(|e| input.error(format!("Invalid parameter in #[roopert(get, ...)]: {}", e)))?;
         for param in params.iter() {
             match param {
