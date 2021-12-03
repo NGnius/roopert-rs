@@ -24,4 +24,4 @@ macros = ["roopert_macro_root"]
 [dependencies]
 
 # internal dependencies
-roopert_macro_root = { path = "members/macro_root", optional = true, features = ["verbose"] }
+roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.2.0"} #, features = ["verbose"] }
