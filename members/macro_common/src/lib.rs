@@ -1,3 +1,4 @@
+//! Attributes and functionality used in all roopert macros
 mod accessors_attribute;
 mod extends_attribute;
 mod generate_trait;

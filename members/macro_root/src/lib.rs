@@ -1,4 +1,4 @@
-//! Root macro definition
+//! Roopert root macro definition
 
 //extern crate proc_macro;
 
@@ -6,7 +6,7 @@ use proc_macro::TokenStream;
 
 use proc_macro_error::{abort, proc_macro_error};
 
-use macro_common::{RoopertAttribute, Generate};
+use roopert_macro_common::{RoopertAttribute, Generate};
 
 /// Root macro for Roopert.
 /// All attribute macros are of the form `#[roopert(type)]`,

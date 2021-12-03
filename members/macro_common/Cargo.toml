@@ -1,7 +1,15 @@
 [package]
-name = "macro_common"
+name = "roopert_macro_common"
 version = "0.1.0"
 edition = "2021"
+authors = ["NGnius <ngniusness@gmail.com>"]
+categories = ["rust-patterns", "data-structures"]
+description = "Another object-oriented toolkit for Rust (common data)"
+exclude = [".github/**"]
+homepage = "https://github.com/NGnius/roopert-rs"
+keywords = ["oop", "macro", "object-oriented"]
+license = "MIT"
+repository = "https://github.com/NGnius/roopert-rs"
 
 [features]
 verbose = []

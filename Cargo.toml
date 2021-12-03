@@ -19,9 +19,9 @@ members = ["members/*"]
 [features]
 default = ["macros"]
 
-macros = ["macro_root"]
+macros = ["roopert_macro_root"]
 
 [dependencies]
 
 # internal dependencies
-macro_root = { path = "members/macro_root", optional = true} #, features = ["verbose"] }
+roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.1.0"} #, features = ["verbose"] }
