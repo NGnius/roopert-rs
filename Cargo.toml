@@ -1,6 +1,6 @@
 [package]
 name = "roopert"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["NGnius <ngniusness@gmail.com>"]
 categories = ["rust-patterns", "data-structures"]
@@ -24,4 +24,4 @@ macros = ["roopert_macro_root"]
 [dependencies]
 
 # internal dependencies
-roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.1.0"} #, features = ["verbose"] }
+roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.2.0"} #, features = ["verbose"] }

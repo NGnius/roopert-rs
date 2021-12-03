@@ -18,9 +18,11 @@ pub struct ExtendsAttribute {
 }
 
 impl ExtendsAttribute {
-    fn impl_asref(target_struct_ident: &Ident, target_field: &Ident, parent_type: &Type) -> TokenStream {
+    fn impl_asref(target_struct: &ItemStruct, target_field: &Ident, parent_type: &Type) -> TokenStream {
+        let target_struct_ident = &target_struct.ident;
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         quote!{
-            impl core::convert::AsRef<#parent_type> for #target_struct_ident {
+            impl #impl_generics core::convert::AsRef<#parent_type> for #target_struct_ident #ty_generics #where_clause{
                 fn as_ref(&self) -> &#parent_type {
                     &self.#target_field
                 }
@@ -28,9 +30,11 @@ impl ExtendsAttribute {
         }
     }
     
-    fn impl_asmut(target_struct_ident: &Ident, target_field: &Ident, parent_type: &Type) -> TokenStream {
+    fn impl_asmut(target_struct: &ItemStruct, target_field: &Ident, parent_type: &Type) -> TokenStream {
+        let target_struct_ident = &target_struct.ident;
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         quote!{
-            impl core::convert::AsMut<#parent_type> for #target_struct_ident {
+            impl #impl_generics core::convert::AsMut<#parent_type> for #target_struct_ident #ty_generics #where_clause {
                 fn as_mut(&mut self) -> &mut #parent_type {
                     &mut self.#target_field
                 }
@@ -38,9 +42,11 @@ impl ExtendsAttribute {
         }
     }
     
-    fn impl_into(target_struct_ident: &Ident, target_field: &Ident, parent_type: &Type) -> TokenStream {
+    fn impl_into(target_struct: &ItemStruct, target_field: &Ident, parent_type: &Type) -> TokenStream {
+        let target_struct_ident = &target_struct.ident;
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         quote!{
-            impl core::convert::Into<#parent_type> for #target_struct_ident {
+            impl #impl_generics core::convert::Into<#parent_type> for #target_struct_ident #ty_generics #where_clause {
                 fn into(self) -> #parent_type {
                     self.#target_field
                 }
@@ -48,9 +54,11 @@ impl ExtendsAttribute {
         }
     }
     
-    fn impl_deref(target_struct_ident: &Ident, target_field: &Ident, parent_type: &Type) -> TokenStream {
+    fn impl_deref(target_struct: &ItemStruct, target_field: &Ident, parent_type: &Type) -> TokenStream {
+        let target_struct_ident = &target_struct.ident;
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         quote!{
-            impl core::ops::Deref for #target_struct_ident {
+            impl #impl_generics core::ops::Deref for #target_struct_ident #ty_generics #where_clause {
                 type Target = #parent_type;
                 fn deref(&self) -> &Self::Target {
                     &self.#target_field
@@ -59,9 +67,11 @@ impl ExtendsAttribute {
         }
     }
     
-    fn impl_derefmut(target_struct_ident: &Ident, target_field: &Ident, _parent_type: &Type) -> TokenStream {
+    fn impl_derefmut(target_struct: &ItemStruct, target_field: &Ident, _parent_type: &Type) -> TokenStream {
+        let target_struct_ident = &target_struct.ident;
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         quote!{
-            impl core::ops::DerefMut for #target_struct_ident {
+            impl #impl_generics core::ops::DerefMut for #target_struct_ident #ty_generics #where_clause {
                 // type Target = #parent_type; // (inferred by Deref impl)
                 fn deref_mut(&mut self) -> &mut Self::Target {
                     &mut self.#target_field
@@ -83,7 +93,7 @@ impl Generate for ExtendsAttribute {
     fn generate(&mut self, input: TokenStream) -> core::result::Result<TokenStream, String> {
         // parse input
         let mut target_struct: ItemStruct = syn::parse(input.into()).map_err(|_| "Only named structs objects can be extended".to_string())?;
-        let target_struct_ident = &target_struct.ident.clone();
+        //let target_struct_ident = &target_struct.ident.clone();
         let mut type_map = HashMap::<Type, Ident>::new(); // associate extending type to struct field
         
         // TODO handle unnamed fields correctly
@@ -133,23 +143,23 @@ impl Generate for ExtendsAttribute {
             }?;
             
             // AsRef implementation
-            let token = Self::impl_asref(target_struct_ident, target_field, parent_type);
+            let token = Self::impl_asref(&target_struct, target_field, parent_type);
             tokens.push(token);
             
             // AsMut implementation
-            let token = Self::impl_asmut(target_struct_ident, target_field, parent_type);
+            let token = Self::impl_asmut(&target_struct, target_field, parent_type);
             tokens.push(token);
             
             // Into implementation
-            let token = Self::impl_into(target_struct_ident, target_field, parent_type);
+            let token = Self::impl_into(&target_struct, target_field, parent_type);
             tokens.push(token);
             
             // Deref implementation
-            let token = Self::impl_deref(target_struct_ident, target_field, parent_type);
+            let token = Self::impl_deref(&target_struct, target_field, parent_type);
             tokens.push(token);
             
             // DerefMut implementation
-            let token = Self::impl_derefmut(target_struct_ident, target_field, parent_type);
+            let token = Self::impl_derefmut(&target_struct, target_field, parent_type);
             tokens.push(token);
         }
         Ok(quote!{

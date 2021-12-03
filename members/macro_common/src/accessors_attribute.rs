@@ -184,10 +184,11 @@ impl Generate for AccessorsAttribute {
         for (meta, attr) in setters {
             setter_tokens.push(attr.impl_set_fn(&meta.ident, &meta.ty));
         }
+        let (impl_generics, ty_generics, where_clause) = target_struct.generics.split_for_impl();
         Ok(quote!{
             #target_struct
             
-            impl #target_struct_ident {
+            impl #impl_generics #target_struct_ident #ty_generics #where_clause {
                 #(#getter_tokens)*
                 
                 #(#setter_tokens)*

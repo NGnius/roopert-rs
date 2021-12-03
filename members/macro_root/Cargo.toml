@@ -1,6 +1,6 @@
 [package]
 name = "roopert_macro_root"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["NGnius <ngniusness@gmail.com>"]
 categories = ["rust-patterns", "data-structures"]
@@ -26,4 +26,4 @@ quote = { version = "^1" }
 proc-macro-error = { version = "^1" }
 
 # internal dependencies
-roopert_macro_common = { path = "../macro_common", version = "0.1.0" } #, features = ["verbose"]}
+roopert_macro_common = { path = "../macro_common", version = "0.2.0" } #, features = ["verbose"]}
