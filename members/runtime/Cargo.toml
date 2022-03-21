@@ -1,0 +1,10 @@
+[package]
+name = "roopert_runtime"
+version = "0.3.0"
+edition = "2021"
+[features]
+default = []
+
+verbose = []
+
+[dependencies]

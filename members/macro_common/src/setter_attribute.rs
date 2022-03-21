@@ -10,7 +10,6 @@ use super::parse::single_path_segment;
 
 #[cfg_attr(feature="verbose", derive(Debug))]
 pub struct SetterAttribute {
-    // TODO
     pre: Option<Expr>,
     post: Option<Expr>,
     name: Option<String>,

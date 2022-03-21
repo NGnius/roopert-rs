@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use syn::{Ident, Result, Token};
 use syn::parse::{Parse, ParseStream};
 
-use super::{ParentAttribute, ExtendsAttribute, AccessorsAttribute, GetterAttribute, SetterAttribute, Generate};
+use super::{ParentAttribute, ExtendsAttribute, AccessorsAttribute, GetterAttribute, SetterAttribute, FieldsAttribute, Generate};
 
 #[cfg_attr(feature="verbose", derive(Debug))]
 pub enum RoopertAttributeType {
@@ -11,6 +11,7 @@ pub enum RoopertAttributeType {
     Accessors(AccessorsAttribute),
     Get(GetterAttribute),
     Set(SetterAttribute),
+    FieldsMetadata(FieldsAttribute),
 }
 
 impl RoopertAttributeType {
@@ -51,6 +52,7 @@ impl Generate for RoopertAttributeType {
             Self::Accessors(accessors) => accessors.generate(input),
             Self::Get(getters) => getters.generate(input),
             Self::Set(setters) => setters.generate(input),
+            Self::FieldsMetadata(metadata) => metadata.generate(input),
         }
     }
     
@@ -61,6 +63,7 @@ impl Generate for RoopertAttributeType {
             Self::Accessors(accessors) => accessors.auto_append(),
             Self::Get(getters) => getters.auto_append(),
             Self::Set(setters) => setters.auto_append(),
+            Self::FieldsMetadata(metadata) => metadata.auto_append(),
         }
     }
 }
@@ -98,6 +101,9 @@ impl Parse for RoopertAttribute {
             "set" => Ok(Self {
                 //ident: ident,
                 attr: RoopertAttributeType::Set(SetterAttribute::parse(input)?),
+            }),
+            "field" | "fields" => Ok(Self {
+                attr: RoopertAttributeType::FieldsMetadata(FieldsAttribute::parse(input)?),
             }),
             _ => Err(input.error(format!("unexpected identifier {}", ident.to_string())))
         }

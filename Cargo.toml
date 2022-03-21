@@ -20,8 +20,10 @@ members = ["members/*"]
 default = ["macros"]
 
 macros = ["roopert_macro_root"]
+verbose = ["roopert_macro_root/verbose", "roopert_runtime/verbose"]
 
 [dependencies]
 
 # internal dependencies
-roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.3.0", features = ["verbose"] }
+roopert_macro_root = { path = "members/macro_root", optional = true, version = "0.3.0"}
+roopert_runtime = { path = "members/runtime", version = "0.3.0"}

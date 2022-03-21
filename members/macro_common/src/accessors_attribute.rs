@@ -97,7 +97,7 @@ impl Parse for AccessorsAttribute {
                             _ => Err(input.error(format!("Unrecognised assignment {} in #[roopert(accessor, ...)]", ident.to_string())))
                         }
                     } else {
-                        Err(input.error("Unsupported left hand side of assignment in #[roopert(accessor, ..., ??? = ...]"))
+                        Err(input.error(format!("Unsupported left hand side of assignment in #[roopert(accessor, ..., {}]", assign.to_token_stream())))
                     }
                 },
                 _ => Err(input.error(format!("Unrecognised attribute parameter {} in #[roopert(accessor, ...)]", p.to_token_stream())))

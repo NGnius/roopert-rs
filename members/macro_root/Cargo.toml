@@ -17,7 +17,7 @@ proc-macro = true
 [features]
 default = []
 
-verbose = []
+verbose = ["roopert_macro_common/verbose"]
 
 
 [dependencies]
@@ -26,4 +26,4 @@ quote = { version = "^1" }
 proc-macro-error = { version = "^1" }
 
 # internal dependencies
-roopert_macro_common = { path = "../macro_common", version = "0.3.0",  features = ["verbose"]}
+roopert_macro_common = { path = "../macro_common", version = "0.3.0"}
